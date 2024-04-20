@@ -1,3 +1,6 @@
+const saveBtn = document.getElementById("save");
+const textInput = document.getElementById("text");
+const fileInput = document.getElementById("file");
 const modeBtn = document.getElementById("mode-btn");
 const eraseAllBtn = document.getElementById("erase-all-btn");
 const eraseBtn = document.getElementById("erase-btn");
@@ -15,9 +18,11 @@ const CANVAS_HEIGHT = 800;
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 ctx.lineWidth = lineWidth.value;
+ctx.lineCap = "round";
 let isPainting = false;
 let isFilling = false;
 
+canvas.addEventListener("dblclick", DoubleClick);
 canvas.addEventListener("mousemove", onMove);
 canvas.addEventListener("mousedown", startpainting);
 canvas.addEventListener("mouseup", cancelPainting);
@@ -31,6 +36,8 @@ colorOptions.forEach((color) => color.addEventListener("click", colorClick));
 modeBtn.addEventListener("click", modeClick);
 eraseAllBtn.addEventListener("click", eraseAllClick);
 eraseBtn.addEventListener("click", eraseClick);
+fileInput.addEventListener("change", fileChange);
+saveBtn.addEventListener("click", saveClick);
 
 function onMove(event) {
   if (isPainting) {
@@ -91,4 +98,34 @@ function eraseClick() {
   ctx.strokeStyle = "white";
   isFilling = false;
   modeBtn.innerText = "Fill";
+}
+
+function fileChange(event) {
+  const file = event.target.files[0];
+  const url = URL.createObjectURL(file);
+  const image = new Image();
+  image.src = url;
+  image.onload = function () {
+    ctx.drawImage(image, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    fileInput.value = null;
+  };
+}
+
+function DoubleClick(event) {
+  const text = textInput.value;
+  if (text !== "") {
+    ctx.save();
+    ctx.lineWidth = 1;
+    ctx.font = "48px serif";
+    ctx.fillText(text, event.offsetX, event.offsetY);
+    ctx.restore();
+  }
+}
+
+function saveClick() {
+  const url = canvas.toDataURL();
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "myDrawing.png";
+  a.click();
 }
